@@ -1,8 +1,17 @@
 version: '3.4'
 
+secrets:
+  google_username:
+    file: ./config/google_username.txt
+  google_password:
+    file: ./config/google_password.txt
+
 services:
   keeptodoistsync:
     image: keeptodoistsync
+    secrets:
+      - google_username
+      - google_password
     build:
       context: .
       dockerfile: ./Dockerfile
