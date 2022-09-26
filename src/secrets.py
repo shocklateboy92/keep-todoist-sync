@@ -9,6 +9,5 @@ def read_secret(name: str):
         with open(DOCKER_SECRET_MOUNT_PATH + name, mode="r") as file:
             return file.read().strip()
     except FileNotFoundError:
-        pause()
         logging.fatal('Unable to read docker secret "%s"', name)
         raise SystemExit
