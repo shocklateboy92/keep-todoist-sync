@@ -12,6 +12,8 @@ services:
     secrets:
       - google_username
       - google_password
+    volumes:
+      - ./app_state:/run/app_state:rw
     build:
       context: .
       dockerfile: ./Dockerfile

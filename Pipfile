@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 todoist-api-python = "*"
+gkeepapi = "*"
 
 [dev-packages]
 black = "*"

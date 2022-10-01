@@ -1,11 +1,27 @@
 version: '3.4'
 
+secrets:
+  google_username:
+    file: ./config/google_username.txt
+  google_password:
+    file: ./config/google_password.txt
+
 services:
   keeptodoistsync:
     image: keeptodoistsync
+    secrets:
+      - google_username
+      - google_password
+    volumes:
+      - ./app_state:/run/app_state
     build:
       context: .
       dockerfile: ./Dockerfile
-    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 src/main.py "]
+    command:
+      [
+        "sh",
+        "-c",
+        "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m src.main.py "
+      ]
     ports:
       - 5678:5678
