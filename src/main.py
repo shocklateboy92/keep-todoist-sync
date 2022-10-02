@@ -1,11 +1,11 @@
 import logging
 from time import sleep
 
-import gkeepapi  # type: ignore
+import gkeepapi
 
 
 from .secrets import read_secret, read_state, write_state
-from .models import Auth
+from .models import Auth, Cache
 
 POLLING_INTERVAL_SECS = 60
 
@@ -19,14 +19,29 @@ keep = gkeepapi.Keep()
 
 auth = read_state(Auth)
 if not auth:
-    # keep.login(google_username, google_password)
-    # token: str = keep.getMasterToken()
-    token = "foo"
-    auth = Auth(token)
+    keep.login(google_username, google_password, sync=False)
+    token: str = keep.getMasterToken()
+    auth = Auth(master_token=token)
 
     write_state(auth)
+else:
+    keep.resume(google_username, auth.master_token, sync=False)
+
+state = read_state(Cache)
+if state:
+    keep.restore(state=state.state)
+
 
 while True:
+    logging.info("Beginning sync...")
+    keep.sync()
+    logging.info("Writing state to file...")
+    write_state(Cache(state=keep.dump()))
+    logging.info("Completed sync.")
+
+    tasks = keep.all()
+    logging.info("Found %n tasks in Google Keep", len(tasks))
+
     logging.info(
         "Completed iteration. Waiting %s secs before next run", POLLING_INTERVAL_SECS
     )
