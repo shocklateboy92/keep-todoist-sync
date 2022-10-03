@@ -10,6 +10,7 @@ DOCKER_SECRET_MOUNT_PATH = "/run/secrets/"
 class State(Enum):
     Auth = "google_auth"
     GoogleTasks = "google_tasks"
+    TaskMap = "task_map"
 
 
 def get_state_path(name: State):

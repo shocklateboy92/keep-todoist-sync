@@ -5,6 +5,8 @@ secrets:
     file: ./config/google_username.txt
   google_password:
     file: ./config/google_password.txt
+  todoist_token:
+    file: ./config/todoist_token.txt
 
 services:
   keeptodoistsync:
@@ -12,6 +14,7 @@ services:
     secrets:
       - google_username
       - google_password
+      - todoist_token
     volumes:
       - app_state:/run/app_state
     build:
