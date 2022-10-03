@@ -1,22 +1,12 @@
 version: '3.4'
 
-secrets:
-  google_username:
-    file: ./config/google_username.txt
-  google_password:
-    file: ./config/google_password.txt
-  todoist_token:
-    file: ./config/todoist_token.txt
-
 services:
   keeptodoistsync:
     image: keeptodoistsync
-    secrets:
-      - google_username
-      - google_password
-      - todoist_token
+    restart: unless-stopped
     volumes:
       - app_state:/run/app_state
+      - ./config:/run/secrets
     build:
       context: .
       dockerfile: ./Dockerfile
