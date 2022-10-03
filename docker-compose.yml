@@ -5,8 +5,8 @@ services:
     image: keeptodoistsync
     restart: unless-stopped
     volumes:
+      - ./config:/run/app_secrets:ro
       - app_state:/run/app_state
-      - ./config:/run/secrets
     build:
       context: .
       dockerfile: ./Dockerfile

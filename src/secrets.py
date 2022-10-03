@@ -4,8 +4,6 @@ from typing import TypeVar
 
 T = TypeVar("T")
 
-DOCKER_SECRET_MOUNT_PATH = "/run/secrets/"
-
 
 class State(Enum):
     Auth = "google_auth"
@@ -19,11 +17,14 @@ def get_state_path(name: State):
 
 def read_secret(name: str) -> str:
     try:
-        with open(DOCKER_SECRET_MOUNT_PATH + name, mode="r") as file:
+        with open(f"/run/app_secrets/{name}.txt", mode="r") as file:
             return file.read().strip()
-    except FileNotFoundError:
-        logging.fatal("Unable to read docker secret '%s'", name)
-        raise SystemExit
+    except FileNotFoundError as e:
+        logging.fatal(
+            "Unable to read secret '%s'. Make sure it's in the `config` directory next to the docker-compose file",
+            name,
+        )
+        raise e
 
 
 def read_state(name: State) -> str | None:
