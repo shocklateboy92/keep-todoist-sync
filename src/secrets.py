@@ -1,15 +1,19 @@
-import json
+from enum import Enum
 import logging
-from types import SimpleNamespace
-from typing import Any, Type, TypeVar
+from typing import TypeVar
 
 T = TypeVar("T")
 
 DOCKER_SECRET_MOUNT_PATH = "/run/secrets/"
 
 
-def get_state_path(type: Type[Any]):
-    return f"/run/app_state/{type.__name__.lower()}.json"
+class State(Enum):
+    Auth = "google_auth"
+    GoogleTasks = "google_tasks"
+
+
+def get_state_path(name: State):
+    return f"/run/app_state/{name.value}.json"
 
 
 def read_secret(name: str) -> str:
@@ -21,18 +25,18 @@ def read_secret(name: str) -> str:
         raise SystemExit
 
 
-def read_state(type: Type[T]) -> T | None:
+def read_state(name: State) -> str | None:
     try:
-        with open(get_state_path(type), "r") as file:
-            return json.load(file, object_hook=lambda d: SimpleNamespace(**d))
+        with open(get_state_path(name), "r") as file:
+            return file.read().strip()
     except Exception as e:
-        logging.warn("Failed to read cached %s state data: %s", type.__name__, e)
+        logging.warn(f"Failed to read cached {name.name} state data: {e}")
         return None
 
 
-def write_state(value: object) -> None:
+def write_state(name: State, value: str) -> None:
     try:
-        with open(get_state_path(type(value)), "w") as file:
-            json.dump(value.__dict__, file)
+        with open(get_state_path(name), "w") as file:
+            file.write(value)
     except Exception as e:
         logging.exception(e)
