@@ -69,7 +69,9 @@ while True:
             f"Creating todoist task for note {note.id} with text '{note.text}'"
         )
         try:
-            task = todoist.add_task(labels=["google_keep"], content=note.text)
+            task = todoist.add_task(
+                labels=["google_keep"], content=note.text, due_string="today"
+            )
             task_map[note.id] = task.id
             write_state(State.TaskMap, json.dumps(task_map))
         except Exception as e:
