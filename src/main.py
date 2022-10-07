@@ -44,6 +44,11 @@ task_map: Dict[str, str] = json.loads(task_map_str) if task_map_str else {}
 logging.debug("Read task map:")
 logging.debug(task_map)
 
+todoist_ignore_label = keep.findLabel("todoist_ignore", create=True)
+todoist_tracked_label = keep.findLabel("todoist_tracked", create=True)
+if not todoist_tracked_label or not todoist_ignore_label:
+    raise Exception("Error issues")
+
 while True:
     logging.info("Beginning sync...")
     keep.sync()
@@ -62,9 +67,23 @@ while True:
     logging.info(f"Found {len(after_cutoff)} notes after cutoff date")
 
     without_maps = [note for note in after_cutoff if not note.id in task_map]
-    logging.info(f"Found {len(without_maps)} notes without corresponding todoist tasks")
+    logging.info(
+        f"Found {len(without_maps)} notes without corresponding todoist tasks in local map"
+    )
 
-    for note in without_maps:
+    without_labels = [
+        note
+        for note in without_maps
+        if not (
+            note.labels.get(todoist_tracked_label.id)
+            or note.labels.get(todoist_ignore_label.id)
+        )
+    ]
+    logging.info(
+        f"Found {len(without_labels)} notes without `todoist_tracked` or `todoist_ignore` labels"
+    )
+
+    for note in without_labels:
         logging.info(
             f"Creating todoist task for note {note.id} with text '{note.text}'"
         )
@@ -72,6 +91,12 @@ while True:
             task = todoist.add_task(
                 labels=["google_keep"], content=note.text, due_string="today"
             )
+
+            logging.info(f"Begin adding label `todoist_tracked` to note '{note.id}'...")
+            note.labels.add(todoist_tracked_label)
+            keep.sync()
+            logging.info(f"Finished adding label `todoist_tracked` to note '{note.id}'")
+
             task_map[note.id] = task.id
             write_state(State.TaskMap, json.dumps(task_map))
         except Exception as e:
